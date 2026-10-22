@@ -1,0 +1,37 @@
+---
+title: "C4 · Nivel 3 — Componentes · App móvil AgeCare, módulo lib/features/music/"
+---
+flowchart TB
+  classDef person fill:#08427B,stroke:#052E56,color:#fff
+  classDef sys fill:#1168BD,stroke:#0B4884,color:#fff
+  classDef cont fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef web fill:#C2571A,stroke:#8A3B12,color:#fff
+  classDef comp fill:#85BBF0,stroke:#5D82A8,color:#0B2540
+  classDef ext fill:#8C8C8C,stroke:#6B6B6B,color:#fff
+  router["<b>Ruta /music</b><br/><i>[go_router · suite AgeCare]</i><br/>Botón 'Música' del menú principal"]:::ext
+
+  subgraph MOD["lib/features/music/  [Contenedor: App Flutter]"]
+    direction TB
+      ui["<b>MusicDebugScreen</b><br/><i>«presentation» music_debug_screen.dart · 412 L</i><br/>Preview de cámara, esqueleto de la mano<br/>y nota activa · ConsumerWidget"]:::comp
+      map["<b>GestureMusicMapper</b><br/><i>«application» gesture_music_mapper.dart · 23 L</i><br/>Dedos levantados → nota Do mayor<br/>mano cerrada = silencio"]:::comp
+      ht["<b>HandTrackingService</b><br/><i>«data» hand_tracking_service.dart · 118 L</i><br/>Abre cámara, entrega frames a MediaPipe,<br/>emite Stream de landmarks"]:::comp
+      ms["<b>MusicSynthService</b><br/><i>«data» music_synth_service.dart · 130 L</i><br/>Genera tonos y controla play/stop"]:::comp
+      dom["<b>Modelos de dominio</b><br/><i>«domain» models.dart · 111 L</i><br/>HandLandmarks · GestureState · MusicNote"]:::comp
+  end
+
+  cam["<b>Cámara</b><br/><i>[API nativa Android]</i>"]:::ext
+  mp["<b>MediaPipe Hand Landmarker</b><br/><i>[Runtime on-device]</i>"]:::ext
+  so["<b>flutter_soloud</b><br/><i>[Motor de audio nativo]</i>"]:::ext
+
+  router -- "navega [in-process]" --> ui
+  ui -- "start() / stop()<br/>[Riverpod provider]" --> ht
+  ht -- "Stream&lt;HandLandmarks&gt;" --> map
+  map -- "play(MusicNote) / silence()" --> ms
+  map -. "estado: nota, dedos [Riverpod]" .-> ui
+  ht -- "lee frames" --> cam
+  ht -- "detect(frame)" --> mp
+  ms -- "reproduce tono [FFI]" --> so
+  ht -. "usa" .-> dom
+  ms -. "usa" .-> dom
+  map -. "usa" .-> dom
+  style MOD fill:#F5F9FD,stroke:#1168BD,stroke-dasharray:6 4,color:#1168BD

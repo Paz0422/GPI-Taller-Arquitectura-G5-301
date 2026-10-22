@@ -1,0 +1,48 @@
+---
+title: "C4 · Nivel 2 — Contenedores · Procesamiento de imagen 100% en el dispositivo"
+---
+flowchart TB
+  classDef person fill:#08427B,stroke:#052E56,color:#fff
+  classDef sys fill:#1168BD,stroke:#0B4884,color:#fff
+  classDef cont fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef web fill:#C2571A,stroke:#8A3B12,color:#fff
+  classDef comp fill:#85BBF0,stroke:#5D82A8,color:#0B2540
+  classDef ext fill:#8C8C8C,stroke:#6B6B6B,color:#fff
+  am["<b>Adulto mayor / cuidador</b><br/><i>[Persona]</i>"]:::person
+
+  subgraph SYS["AgeCare · Director Musical  [Sistema]"]
+    direction LR
+    subgraph A["Opción A · Dispositivo Android"]
+      direction TB
+      camA["<b>Cámara del dispositivo</b><br/><i>[API nativa]</i>"]:::ext
+      appA["<b>App móvil AgeCare — módulo Música</b><br/><i>[Flutter / Dart · Riverpod · go_router]</i><br/>UI accesible; orquesta captura → inferencia → audio<br/>Repo: Paz0422/agecare_app"]:::cont
+      mlA["<b>Runtime de inferencia</b><br/><i>[MediaPipe Hand Landmarker · TFLite]</i><br/>Modelo empaquetado en la app"]:::cont
+      sndA["<b>Motor de audio</b><br/><i>[flutter_soloud · C++ nativo]</i><br/>Síntesis de baja latencia"]:::cont
+      camA -- "frames YUV<br/>[plugin cámara]" --> appA
+      appA -- "detect(frame)<br/>[in-process]" --> mlA
+      appA -- "play(nota) / silence()<br/>[FFI]" --> sndA
+    end
+    subgraph B["Opción B · Navegador web"]
+      direction TB
+      camB["<b>Cámara web</b><br/><i>[getUserMedia]</i>"]:::ext
+      webB["<b>SPA Director Musical web</b><br/><i>[Next.js 16 · TypeScript · Tailwind]</i><br/>Cliente standalone en el navegador<br/>Repo: Rorro10/AgeCare-Modelo-Generación-de-Música"]:::web
+      mlB["<b>Runtime de inferencia</b><br/><i>[MediaPipe Hands · WASM / WebGL]</i>"]:::web
+      sndB["<b>Motor de audio</b><br/><i>[Tone.js · Web Audio API]</i>"]:::web
+      camB -- "MediaStream<br/>[local]" --> webB
+      webB -- "detectForVideo()<br/>[in-process]" --> mlB
+      webB -- "triggerAttack()<br/>[in-process]" --> sndB
+    end
+  end
+
+  api["<b>Backend AgeCare</b><br/><i>[Existente · FastAPI api/v1]</i><br/>Registro de sesiones y métricas"]:::ext
+  fb["<b>Firebase</b><br/><i>[Existente · FCM]</i><br/>Notificaciones de la suite"]:::ext
+  host["<b>Hosting estático + CDN</b><br/><i>[Por definir]</i><br/>Sirve SPA, WASM y modelo"]:::ext
+
+  am -- "Gesticula / escucha" --> appA
+  am -- "Abre URL [HTTPS]" --> webB
+  appA -- "POST /api/v1/sessions<br/>[HTTPS/REST JSON · propuesto]" --> api
+  fb -. "Push [FCM]" .-> appA
+  host -- "HTML/JS/WASM/.task<br/>[HTTPS GET]" --> webB
+  style SYS fill:#F5F9FD,stroke:#1168BD,stroke-dasharray:6 4,color:#1168BD
+  style A fill:#EAF2FB,stroke:#9FB7D4,color:#1F3B5C
+  style B fill:#FBF0E9,stroke:#E8B597,color:#8A3B12

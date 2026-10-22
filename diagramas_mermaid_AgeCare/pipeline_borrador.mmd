@@ -1,0 +1,10 @@
+flowchart LR
+  classDef s fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef e fill:#FDECEA,stroke:#C0392B,color:#7B241C
+  classDef t fill:#EAF5EA,stroke:#2E7D32,color:#1B5E20
+  A["1. Ingesta<br/>frame cámara"]:::s --> B["2. Preproceso<br/>espejo, escalado"]:::s --> C["3. Inferencia<br/>MediaPipe on-device<br/>21 landmarks"]:::s --> D{"¿mano detectada?"}
+  D -- sí --> E["4. Mapeo<br/>dedos → nota"]:::s --> F["5. Audio<br/>flutter_soloud / Tone.js"]:::s
+  D -- no --> X["Silencio +<br/>aviso en pantalla"]:::e
+  C -. error GPU / modelo .-> Y["Reintento en CPU /<br/>mensaje de error"]:::e
+  F -.-> T["Métricas locales<br/>latencia, FPS"]:::t -.-> S[("Backend FastAPI<br/>/api/v1/sessions<br/>(propuesto)")]:::t
+  M["Modelo pre-entrenado<br/>MediaPipe (.task versionado)"] ==> C

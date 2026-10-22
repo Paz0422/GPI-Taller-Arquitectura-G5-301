@@ -1,0 +1,23 @@
+---
+title: "C4 · Nivel 1 — Contexto · AgeCare Director Musical"
+---
+flowchart TB
+  classDef person fill:#08427B,stroke:#052E56,color:#fff
+  classDef sys fill:#1168BD,stroke:#0B4884,color:#fff
+  classDef cont fill:#438DD5,stroke:#2E6295,color:#fff
+  classDef web fill:#C2571A,stroke:#8A3B12,color:#fff
+  classDef comp fill:#85BBF0,stroke:#5D82A8,color:#0B2540
+  classDef ext fill:#8C8C8C,stroke:#6B6B6B,color:#fff
+  am["<b>Adulto mayor</b><br/><i>[Persona]</i><br/>Mueve la mano frente a la cámara<br/>para generar música"]:::person
+  cu["<b>Cuidador / familiar</b><br/><i>[Persona]</i><br/>Acompaña la sesión y abre el módulo<br/>en tablet, celular o PC"]:::person
+  dm["<b>AgeCare · Director Musical</b><br/><i>[Sistema de software — alcance del proyecto]</i><br/>Reconoce la mano on-device, mapea el gesto<br/>a una nota y sintetiza audio en tiempo real.<br/>Opción A: app Flutter · Opción B: web"]:::sys
+  suite["<b>Suite AgeCare</b><br/><i>[Sistema existente]</i><br/>App de cuidado + Backend FastAPI api/v1<br/>+ Firebase"]:::ext
+  mp["<b>Google MediaPipe</b><br/><i>[Sistema externo]</i><br/>Modelo pre-entrenado Hand Landmarker<br/>(21 puntos por mano)"]:::ext
+  allox["<b>Alloxentric SpA</b><br/><i>[Organización cliente]</i><br/>Dueño del producto; evalúa,<br/>acepta e integra el módulo"]:::ext
+
+  am -- "Gestos de mano / escucha notas<br/>[cámara + audio]" --> dm
+  cu -- "Abre módulo, inicia y detiene sesión" --> dm
+  dm -- "Se integra como módulo (Opción A)<br/>[HTTPS/REST JSON · propuesto]" --> suite
+  dm -. "Usa modelo on-device<br/>[asset .task / WASM vía HTTPS]" .-> mp
+  allox -. "Define línea de implementación<br/>y acepta entregables" .-> dm
+  allox -. "Opera y mantiene" .-> suite
